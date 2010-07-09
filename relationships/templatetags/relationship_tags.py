@@ -1,4 +1,3 @@
-import re
 from django import template
 from django.core.urlresolvers import reverse
 from django.db.models import Q
@@ -6,7 +5,7 @@ from django.db.models.loading import get_model
 from django.template import TemplateSyntaxError
 from django.utils.functional import wraps
 
-from relationships.models import Relationship, RelationshipStatus
+from relationships.models import RelationshipStatus
 from relationships.utils import positive_filter, negative_filter
 
 register = template.Library()
