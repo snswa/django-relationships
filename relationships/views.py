@@ -10,6 +10,7 @@ from django.views.generic.list_detail import object_list
 
 from relationships.decorators import require_user
 from relationships.models import RelationshipStatus
+from relationships.utils import default_redirect
 
 @login_required
 def relationship_redirect(request):
@@ -60,7 +61,8 @@ def relationship_list(request, user, status_slug=None,
 @require_user
 def relationship_handler(request, user, status_slug, add=True,
                          template_name='relationships/confirm.html',
-                         success_template_name='relationships/success.html'):
+                         success_template_name='relationships/success.html',
+                         success_url=None):
     status = get_object_or_404(RelationshipStatus, from_slug=status_slug)
     if request.method == 'POST':
         if add:
@@ -70,8 +72,9 @@ def relationship_handler(request, user, status_slug, add=True,
         if request.is_ajax():
             response = {'result': '1'}
             return HttpResponse(json.dumps(response), mimetype="application/json")
-        if request.GET.get('next'):
-            return HttpResponseRedirect(request.GET['next'])
+        success_url = default_redirect(request, default=success_url)
+        if success_url:
+            return HttpResponseRedirect(success_url)
         template_name = success_template_name
     return render_to_response(template_name, 
         {'to_user': user, 'status': status, 'add': add},

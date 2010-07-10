@@ -1,3 +1,5 @@
+from django.core.urlresolvers import reverse
+from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.models import User
 
 def extract_user_field(model):
@@ -31,3 +33,22 @@ def negative_filter(qs, user_qs, user_lookup=None):
 
     qs = qs.exclude(**query).distinct()
     return qs
+
+def default_redirect(request, redirect_field_name=REDIRECT_FIELD_NAME,
+        urlname=None, default=None):
+    """
+    Returns the URL to be used in relationship handler by looking at different
+    values in the following order:
+
+    - The URL under with the name "relationship_list_base"
+    - a REQUEST value, GET or POST, named "next" by default.
+    """
+    if urlname:
+        default_redirect_to = reverse(urlname)
+    else:
+        default_redirect_to = default
+    redirect_to = request.REQUEST.get(redirect_field_name)
+    # light security check -- make sure redirect_to isn't garabage.
+    if not redirect_to or "://" in redirect_to or " " in redirect_to:
+        redirect_to = default_redirect_to
+    return redirect_to
