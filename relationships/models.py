@@ -6,6 +6,7 @@ from django.db import models, connection
 from django.db.models.fields.related import create_many_related_manager, ManyToManyRel
 from django.utils.translation import ugettext_lazy as _
 
+from relationships.signals import relationship_added, relationship_removed
 
 class RelationshipStatusManager(models.Manager):
     # convenience methods to handle some default statuses
@@ -84,16 +85,28 @@ class RelationshipManager(User._default_manager.__class__):
             to_user=user,
             status=status,
             site=Site.objects.get_current())
+        relationship_added.send(
+            instance=relationship,
+            from_user=self.instance,
+            to_user=user,
+            status=status)
         return relationship
 
     def remove(self, user, status=None):
         if not status:
             status = RelationshipStatus.objects.following()
-        Relationship.objects.filter(
+        relationships = Relationship.objects.filter(
             from_user=self.instance, 
             to_user=user,
             status=status,
-            site__pk=settings.SITE_ID).delete()
+            site__pk=settings.SITE_ID)
+        for relationship in relationships:
+            relationship_removed.send(
+                instance=relationship,
+                from_user=self.instance,
+                to_user=user,
+                status=status)
+        relationships.delete()
         return
     
     def get_relationships(self, status):
