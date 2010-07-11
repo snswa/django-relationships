@@ -86,6 +86,7 @@ class RelationshipManager(User._default_manager.__class__):
             status=status,
             site=Site.objects.get_current())
         relationship_added.send(
+            sender=self,
             instance=relationship,
             from_user=self.instance,
             to_user=user,
@@ -102,6 +103,7 @@ class RelationshipManager(User._default_manager.__class__):
             site__pk=settings.SITE_ID)
         for relationship in relationships:
             relationship_removed.send(
+                sender=self,
                 instance=relationship,
                 from_user=self.instance,
                 to_user=user,
