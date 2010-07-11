@@ -42,6 +42,7 @@ class IfRelationshipNode(template.Node):
         return self.nodelist_false.render(context)
 
 @register.tag
+@register.tag(name='ifrelationship')
 def if_relationship(parser, token):
     """
     Determine if a certain type of relationship exists between two users.
